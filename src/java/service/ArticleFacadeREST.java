@@ -1,24 +1,25 @@
 package service;
 
+import authn.Secured;
 import com.google.gson.ExclusionStrategy;
 import com.google.gson.FieldAttributes;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.sun.xml.messaging.saaj.util.Base64;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.Response.Status;
 import model.entities.Article;
 import model.entities.Topic;
 import java.util.List;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
-import model.entities.Author;
 import model.entities.Customer;
 
 @Stateless
@@ -38,7 +39,7 @@ public class ArticleFacadeREST extends AbstractFacade<Article> {
                             @Override
                             public boolean shouldSkipField(FieldAttributes f) {
                                 // Excluye campos que no necesites en el listado
-                                return f.getName().equals("text") || f.getName().equals("topics");
+                                return f.getName().equals("text") || f.getName().equals("topics") || f.getName().equals("links");
                             }
                             @Override
                             public boolean shouldSkipClass(Class<?> clazz) {
@@ -54,7 +55,7 @@ public class ArticleFacadeREST extends AbstractFacade<Article> {
                             @Override
                             public boolean shouldSkipField(FieldAttributes f) {
                                 // Excluye campos que no necesites en el listado
-                                return f.getName().equals("isPrivate") || f.getName().equals("summary");
+                                return f.getName().equals("isPrivate") || f.getName().equals("summary") || f.getName().equals("links");
                             }
                             @Override
                             public boolean shouldSkipClass(Class<?> clazz) {
@@ -62,7 +63,6 @@ public class ArticleFacadeREST extends AbstractFacade<Article> {
                             }
                         })
                         .create();
-
 
     @GET
     @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
@@ -113,7 +113,6 @@ public class ArticleFacadeREST extends AbstractFacade<Article> {
         }
 
         if (articles != null && !articles.isEmpty()) {
-            //Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
             String json = gsonList.toJson(articles);
             return Response.ok(json).build();
         } else {
@@ -122,41 +121,80 @@ public class ArticleFacadeREST extends AbstractFacade<Article> {
     }
 
     @GET
-    //@Secured
+    @Secured
     @Path("/{id}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response findArticle(@PathParam("id") Long id/*, @HeaderParam("Authorization") String token*/) {
-        if(super.find(id) == null) {
-            return Response.status(Response.Status.NOT_FOUND).entity("Article not found").build();
-        } else {
-            Article temp = super.find(id);
-            //Gson gson = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().create();
-            String json = gsonDetail.toJson(temp);
+    @Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+    public Response findArticle(@PathParam("id") Long id) {
+        Article article = super.find(id);
+
+        if (article != null) {
+            // Convierte el objeto `Article` a JSON
+            String json = gsonDetail.toJson(article);
             return Response.ok(json).build();
+        }else{
+            return Response.status(Response.Status.NOT_FOUND).entity("Article not found").build();
         }
     }
 
     @DELETE
     @Path("/{id}")
-    //@Secured
-    public Response deleteArticle(@PathParam("id") Long id, @HeaderParam("Authorization") String token) {
+    @Secured
+    public Response deleteArticle(@PathParam("id") Long id, @HeaderParam("Authorization") String authHeader) {
+        if (authHeader == null || authHeader.isEmpty() || !authHeader.startsWith("Basic ")) {
+            return Response.status(Response.Status.UNAUTHORIZED)
+                    .entity("Authorization header is missing or invalid")
+                    .build();
+        }
+
+        // Decodificar el encabezado Authorization
+        String username;
+        try {
+            String encodedCredentials = authHeader.replace("Basic ", "");
+            String decodedCredentials = Base64.base64Decode(encodedCredentials);
+            username = decodedCredentials.split(":")[0]; // Asumimos formato "username:password"
+        } catch (Exception e) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("Invalid authorization header format")
+                    .build();
+        }
+
+        // Buscar el artículo
         Article article = super.find(id);
         if (article == null) {
-            return Response.status(Status.NOT_FOUND).entity("Article not found").build();
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity("Article not found")
+                    .build();
         }
-        
-        /*if (!isUserAuthor(token, article)) {
-            return Response.status(Status.FORBIDDEN).entity("Only the author can delete this article").build();
-        }*/
-        
+
+        // Verificar si el usuario autenticado es el autor del artículo
+        if (!article.getAuthor().getUsername().equals(username)) {
+            return Response.status(Response.Status.FORBIDDEN)
+                    .entity("Only the author can delete this article")
+                    .build();
+        }
+
+        // Eliminar el artículo
         super.remove(article);
         return Response.noContent().build();
     }
 
+
     @POST
-    //@Secured
+    @Secured
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-    public Response postArticle(String article) {
+    public Response postArticle(String article, @HeaderParam("Authorization") String authHeader) {
+        // Validar que el encabezado Authorization no esté vacío
+        if (authHeader == null || !authHeader.startsWith("Basic ")) {
+            return Response.status(Response.Status.UNAUTHORIZED)
+                    .entity("Authorization header is missing or invalid.")
+                    .build();
+        }
+
+        // Extraer y decodificar el username desde authHeader
+        String encodedCredentials = authHeader.replace("Basic ", "");
+        String decodedCredentials = Base64.base64Decode(encodedCredentials);
+        String username = decodedCredentials.split(":")[0]; // Asumimos formato "username:password"
+
         // Convertir el JSON a un objeto Article temporal
         Gson gson = new Gson();
         Article temp = gson.fromJson(article, Article.class);
@@ -165,27 +203,49 @@ public class ArticleFacadeREST extends AbstractFacade<Article> {
         Article result = new Article();
         result.setDate(Date.from(LocalDateTime.now().atZone(ZoneId.systemDefault()).toInstant()));
         result.setTitle(temp.getTitle());
-        result.setSummary(temp.getSummary());
-        result.setText(temp.getText());
-        result.setViews(temp.getViews());
+
+        // Validar el número de palabras en summary
+        if (temp.getSummary() != null && temp.getSummary().split("\\s+").length > 20) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("Summary exceeds the maximum limit of 20 words.")
+                    .build();
+        } else {
+            result.setSummary(temp.getSummary());
+        }
+
+        // Validar el número de palabras en text
+        if (temp.getText() != null && temp.getText().split("\\s+").length > 500) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("Text exceeds the maximum limit of 500 words.")
+                    .build();
+        } else {
+            result.setText(temp.getText());
+        }
+
+        result.setViews(0);
         result.setIsPrivate(temp.isPrivate());
 
-        // Verificar y asignar autor usando authorUsername
+        // Buscar el Customer correspondiente al username
         TypedQuery<Customer> tq = em.createQuery(
-            "SELECT c FROM Customer c WHERE c.username = :username", Customer.class);
-        tq.setParameter("username", temp.getAuthor().getUsername());
-        Customer customer = tq.getSingleResult();
-        if (customer == null || customer.getAuthor() == null) {
+                "SELECT c FROM Customer c WHERE c.username = :username", Customer.class);
+        tq.setParameter("username", username);
+
+        Customer customer;
+        try {
+            customer = tq.getSingleResult(); // Intentamos obtener al usuario
+        } catch (NoResultException e) {
             return Response.status(Response.Status.BAD_REQUEST)
-                    .entity("Author not found or invalid")
+                    .entity("User not found.")
                     .build();
         }
-        result.setAuthor(customer.getAuthor());
+
+        // Asignar el autor al artículo
+        result.setAuthor(customer);
 
         // Agregar los tópicos válidos
         for (Topic topic : temp.getTopics()) {
             TypedQuery<Topic> topicQuery = em.createQuery(
-                "SELECT t FROM Topic t WHERE t.name = :name", Topic.class);
+                    "SELECT t FROM Topic t WHERE t.name = :name", Topic.class);
             topicQuery.setParameter("name", topic.getName());
             Topic validTopic = topicQuery.getSingleResult();
             if (validTopic != null) {
@@ -199,34 +259,9 @@ public class ArticleFacadeREST extends AbstractFacade<Article> {
 
         // Retornar respuesta 201 con el id del nuevo artículo
         return Response.status(Response.Status.CREATED)
-                       .entity("{\"id\":" + result.getId() + "}")
-                       .build();
+                .entity("{\"id\":" + result.getId() + "}")
+                .build();
     }
-
-
-    private boolean validateTopics(List<Topic> topics) {
-        for (Topic topic : topics) {
-            if (em.find(Topic.class, topic.getId()) == null) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    private Author getAuthenticatedUser(String token) {
-        // Lógica para obtener el usuario autenticado usando el token.
-        return em.find(Author.class, token);  // Solo es un ejemplo; implementa el método real.
-    }
-
-    /*private boolean isUserAuthenticated(String token) {
-        // Lógica de autenticación usando el token
-        return getAuthenticatedUser(token) != null;
-    }
-
-    private boolean isUserAuthor(String token, Article article) {
-        Author author = getAuthenticatedUser(token);
-        return author != null && author.equals(article.getAuthor());
-    }*/
 
     @Override
     protected EntityManager getEntityManager() {

@@ -43,37 +43,42 @@
                 "INSERT INTO " + schema + ".TOPIC VALUES (NEXT VALUE FOR TOPIC_GEN, 'Machine Learning')",
                 "INSERT INTO " + schema + ".TOPIC VALUES (NEXT VALUE FOR TOPIC_GEN, 'Cyber Security')",
                 
-                // Inserciones para AUTHOR (algunos clientes son también autores)
-                "INSERT INTO " + schema + ".AUTHOR (ID, USERNAME) VALUES (NEXT VALUE FOR AUTHOR_GEN, 'Andrew Zuo')",
-                "INSERT INTO " + schema + ".AUTHOR (ID, USERNAME) VALUES (NEXT VALUE FOR AUTHOR_GEN, 'bob')",
-                "INSERT INTO " + schema + ".AUTHOR (ID, USERNAME) VALUES (NEXT VALUE FOR AUTHOR_GEN, 'alice')",
+                // Inserciones para CREDENTIALS
+                "INSERT INTO " + schema + ".CREDENTIALS (ID, USERNAME, PASSWORD) VALUES (NEXT VALUE FOR CREDENTIALS_GEN, 'sob', 'sob')",
+                "INSERT INTO " + schema + ".CREDENTIALS (ID, USERNAME, PASSWORD) VALUES (NEXT VALUE FOR CREDENTIALS_GEN, 'Andrew Zuo', 'andrew123')",
+                "INSERT INTO " + schema + ".CREDENTIALS (ID, USERNAME, PASSWORD) VALUES (NEXT VALUE FOR CREDENTIALS_GEN, 'alice', 'alice123')",
+                "INSERT INTO " + schema + ".CREDENTIALS (ID, USERNAME, PASSWORD) VALUES (NEXT VALUE FOR CREDENTIALS_GEN, 'bob', 'bob123')",
 
                 // Inserciones para CUSTOMER
-                "INSERT INTO " + schema + ".CUSTOMER (ID, USERNAME, PASSWORD) VALUES (NEXT VALUE FOR CUSTOMER_GEN, 'sob', 'sob')",
-                "INSERT INTO " + schema + ".CUSTOMER (ID, USERNAME, PASSWORD, AUTHOR_ID) VALUES (NEXT VALUE FOR CUSTOMER_GEN, 'alice', 'alice123', 3)",
-                "INSERT INTO " + schema + ".CUSTOMER (ID, USERNAME, PASSWORD, AUTHOR_ID) VALUES (NEXT VALUE FOR CUSTOMER_GEN, 'bob', 'bob123', 2)",
-                "INSERT INTO " + schema + ".CUSTOMER (ID, USERNAME, PASSWORD) VALUES (NEXT VALUE FOR CUSTOMER_GEN, 'charlie', 'charlie123')",
+                "INSERT INTO " + schema + ".CUSTOMER (ID, USERNAME, CREDENTIAL_ID) VALUES (NEXT VALUE FOR CUSTOMER_GEN, 'sob', 1)",
+                "INSERT INTO " + schema + ".CUSTOMER (ID, USERNAME, CREDENTIAL_ID) VALUES (NEXT VALUE FOR CUSTOMER_GEN, 'Andrew Zuo', 2)",
+                "INSERT INTO " + schema + ".CUSTOMER (ID, USERNAME, CREDENTIAL_ID) VALUES (NEXT VALUE FOR CUSTOMER_GEN, 'alice', 3)",
+                "INSERT INTO " + schema + ".CUSTOMER (ID, USERNAME, CREDENTIAL_ID) VALUES (NEXT VALUE FOR CUSTOMER_GEN, 'bob', 4)",
+                "INSERT INTO " + schema + ".CUSTOMER (ID, USERNAME) VALUES (NEXT VALUE FOR CUSTOMER_GEN, 'charlie')",
 
                 // Inserciones para ARTICLE (algunos artículos públicos y otros privados)
-                "INSERT INTO " + schema + ".ARTICLE (ID, TITLE, DATE, VIEWS, SUMMARY, TEXT, ISPRIVATE, AUTHOR_ID) VALUES (NEXT VALUE FOR ARTICLE_GEN, 'Async Await', TIMESTAMP('2024-06-22 00:00:00'), 3300, 'Resumen Async', 'Contenido sobre Async Await', 0, 1)", 
-                "INSERT INTO " + schema + ".ARTICLE (ID, TITLE, DATE, VIEWS, SUMMARY, TEXT, ISPRIVATE, AUTHOR_ID) VALUES (NEXT VALUE FOR ARTICLE_GEN, 'Introduction to Java', TIMESTAMP('2023-09-15 00:00:00'), 1500, 'Resumen Java', 'Contenido sobre Java', 0, 2)", 
-                "INSERT INTO " + schema + ".ARTICLE (ID, TITLE, DATE, VIEWS, SUMMARY, TEXT, ISPRIVATE, AUTHOR_ID) VALUES (NEXT VALUE FOR ARTICLE_GEN, 'Advanced Machine Learning', TIMESTAMP('2023-12-01 00:00:00'), 4800, 'Resumen ML', 'Contenido avanzado de ML', 1, 1)", 
-                "INSERT INTO " + schema + ".ARTICLE (ID, TITLE, DATE, VIEWS, SUMMARY, TEXT, ISPRIVATE, AUTHOR_ID) VALUES (NEXT VALUE FOR ARTICLE_GEN, 'Cyber Security Essentials', TIMESTAMP('2023-01-20 00:00:00'), 2900, 'Resumen CyberSec', 'Contenido sobre seguridad cibernética', 0, 3)", 
-                "INSERT INTO " + schema + ".ARTICLE (ID, TITLE, DATE, VIEWS, SUMMARY, TEXT, ISPRIVATE, AUTHOR_ID) VALUES (NEXT VALUE FOR ARTICLE_GEN, 'JavaScript Promises', TIMESTAMP('2023-08-30 00:00:00'), 2600, 'Resumen Promises', 'Contenido sobre Promesas en JavaScript', 1, 2)",
+                "INSERT INTO " + schema + ".ARTICLE (ID, TITLE, DATE, VIEWS, SUMMARY, TEXT, ISPRIVATE, AUTHOR_ID) VALUES (NEXT VALUE FOR ARTICLE_GEN, "
+                    + "'Async Await', TIMESTAMP('2024-06-22 00:00:00'), '3.3k', 'Resumen Async', 'Contenido sobre Async Await', 0, 2)", 
+                "INSERT INTO " + schema + ".ARTICLE (ID, TITLE, DATE, VIEWS, SUMMARY, TEXT, ISPRIVATE, AUTHOR_ID) VALUES (NEXT VALUE FOR ARTICLE_GEN, "
+                    + "'Introduction to Java', TIMESTAMP('2023-09-15 00:00:00'), '1.5k', 'Resumen Java', 'Contenido sobre Java', 0, 3)", 
+                "INSERT INTO " + schema + ".ARTICLE (ID, TITLE, DATE, VIEWS, SUMMARY, TEXT, ISPRIVATE, AUTHOR_ID) VALUES (NEXT VALUE FOR ARTICLE_GEN, "
+                    + "'Advanced Machine Learning', TIMESTAMP('2023-12-01 00:00:00'), '4.8k', 'Resumen ML', 'Contenido avanzado de ML', 1, 2)", 
+                "INSERT INTO " + schema + ".ARTICLE (ID, TITLE, DATE, VIEWS, SUMMARY, TEXT, ISPRIVATE, AUTHOR_ID) VALUES (NEXT VALUE FOR ARTICLE_GEN, "
+                    + "'Cyber Security Essentials', TIMESTAMP('2023-01-20 00:00:00'), '2.9k', 'Resumen CyberSec', 'Contenido sobre seguridad cibernética', 0, 3)", 
+                "INSERT INTO " + schema + ".ARTICLE (ID, TITLE, DATE, VIEWS, SUMMARY, TEXT, ISPRIVATE, AUTHOR_ID) VALUES (NEXT VALUE FOR ARTICLE_GEN, "
+                    + "'JavaScript Promises', TIMESTAMP('2023-08-30 00:00:00'), '2.6k', 'Resumen Promises', 'Contenido sobre Promesas en JavaScript', 1, 4)",
+                "INSERT INTO " + schema + ".ARTICLE (ID, TITLE, DATE, VIEWS, SUMMARY, TEXT, ISPRIVATE, AUTHOR_ID) VALUES (NEXT VALUE FOR ARTICLE_GEN, "
+                    + "'FullStacks Apps', TIMESTAMP('2024-12-22 00:00:00'), '2.9k', 'Resumen FullStacks App', 'Contenido sobre FullStacks App', 0, 4)", 
 
                 // Asociaciones entre ARTICLE y TOPIC
-                "INSERT INTO " + schema + ".ARTICLE_TOPIC (ARTICLE_ID, TOPIC_ID) VALUES (1, 1)",  // Async Await - Computer Science
-                "INSERT INTO " + schema + ".ARTICLE_TOPIC (ARTICLE_ID, TOPIC_ID) VALUES (1, 2)",  // Async Await - Web Programming
-                "INSERT INTO " + schema + ".ARTICLE_TOPIC (ARTICLE_ID, TOPIC_ID) VALUES (2, 1)",  // Introduction to Java - Computer Science
-                "INSERT INTO " + schema + ".ARTICLE_TOPIC (ARTICLE_ID, TOPIC_ID) VALUES (3, 4)",  // Advanced ML - Machine Learning
-                "INSERT INTO " + schema + ".ARTICLE_TOPIC (ARTICLE_ID, TOPIC_ID) VALUES (4, 5)",  // CyberSec Essentials - Cyber Security
-                "INSERT INTO " + schema + ".ARTICLE_TOPIC (ARTICLE_ID, TOPIC_ID) VALUES (5, 3)",  // JS Promises - JavaScript
-
-                // Asociaciones entre CUSTOMER y sus artículos favoritos (favArticles)
-                "INSERT INTO " + schema + ".CUSTOMER_ARTICLE (CUSTOMER_ID, FAVARTICLES_ID) VALUES (1, 1)",  // 'sob' - Async Await
-                "INSERT INTO " + schema + ".CUSTOMER_ARTICLE (CUSTOMER_ID, FAVARTICLES_ID) VALUES (2, 2)",  // 'alice' - Introduction to Java
-                "INSERT INTO " + schema + ".CUSTOMER_ARTICLE (CUSTOMER_ID, FAVARTICLES_ID) VALUES (3, 4)",  // 'bob' - CyberSec Essentials
-                "INSERT INTO " + schema + ".CUSTOMER_ARTICLE (CUSTOMER_ID, FAVARTICLES_ID) VALUES (4, 3)",  // 'charlie' - Advanced ML
+                "INSERT INTO " + schema + ".ARTICLE_TOPIC (ARTICLE_ID, TOPIC_ID) VALUES (1, 1)",  
+                "INSERT INTO " + schema + ".ARTICLE_TOPIC (ARTICLE_ID, TOPIC_ID) VALUES (1, 2)",  
+                "INSERT INTO " + schema + ".ARTICLE_TOPIC (ARTICLE_ID, TOPIC_ID) VALUES (2, 1)",  
+                "INSERT INTO " + schema + ".ARTICLE_TOPIC (ARTICLE_ID, TOPIC_ID) VALUES (3, 4)", 
+                "INSERT INTO " + schema + ".ARTICLE_TOPIC (ARTICLE_ID, TOPIC_ID) VALUES (4, 5)",
+                "INSERT INTO " + schema + ".ARTICLE_TOPIC (ARTICLE_ID, TOPIC_ID) VALUES (5, 3)", 
+                "INSERT INTO " + schema + ".ARTICLE_TOPIC (ARTICLE_ID, TOPIC_ID) VALUES (6, 1)",  
+                "INSERT INTO " + schema + ".ARTICLE_TOPIC (ARTICLE_ID, TOPIC_ID) VALUES (6, 2)",
             };
 
             for (String datum : data) {

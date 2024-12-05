@@ -42,7 +42,9 @@ import java.util.List;
                     "WHERE EXISTS (SELECT t FROM a.topics t WHERE t.name = :topic1) " +
                     "AND EXISTS (SELECT t FROM a.topics t WHERE t.name = :topic2) " +
                     "AND a.author.username = :author " +
-                    "ORDER BY a.views DESC")
+                    "ORDER BY a.views DESC"),
+    @NamedQuery(name="findArticleById", 
+                query="SELECT a FROM Article a WHERE a.id = :id")
 })                 
 @Entity
 @XmlRootElement
@@ -56,8 +58,10 @@ public class Article implements Serializable {
     private String title;
     @Expose
     private Date date;
+    //@Expose
+    private float Numviews;
     @Expose
-    private float views;
+    private String views;
     @Expose
     private String summary;
     @Expose
@@ -65,10 +69,10 @@ public class Article implements Serializable {
     @Expose
     private boolean isPrivate;
     
-    @ManyToOne//(fetch = FetchType.LAZY)
+    @ManyToOne
     @JsonbTransient
-    @Expose//(serialize = true)
-    private Author author;
+    @Expose
+    private Customer author;
     
     @ManyToMany
     @JoinTable(
@@ -108,12 +112,17 @@ public class Article implements Serializable {
         this.date = date;
     }
 
-    public float getViews() {
+    public float getNumViews() {
+        return Numviews;
+    }
+    
+    public String getViews(){
         return views;
     }
 
-    public void setViews(float views) {
-        this.views = views;
+    public void setViews(float Numviews) {
+        //this.Numviews = Numviews;
+        this.views = formatViews(Numviews);
     }
 
     public String getSummary() {
@@ -140,11 +149,19 @@ public class Article implements Serializable {
         this.isPrivate = isPrivate;
     }
 
-    public Author getAuthor() {
+    public float getNumviews() {
+        return Numviews;
+    }
+
+    public void setNumviews(float Numviews) {
+        this.Numviews = Numviews;
+    }
+
+    public Customer getAuthor() {
         return author;
     }
 
-    public void setAuthor(Author author) {
+    public void setAuthor(Customer author) {
         this.author = author;
     }
        
@@ -156,12 +173,23 @@ public class Article implements Serializable {
         topics.add(topic);
     }
 
+    // Método privado para dar formato a las vistas
+    private String formatViews(float views) {
+        if (views < 1000) {
+            return String.valueOf((int) views);
+        } else if (views < 1000000) {
+            return String.format("%.1fk", views / 1000);
+        } else {
+            return String.format("%.1fM", views / 1000000);
+        }
+    }
+
     @Override
     public String toString() {
-        return "Article{" + "id=" + id + ", title=" + title + ", date=" + date +
-                ", views=" + views + ", summary=" + summary + ", text=" + text +
-                ", isPrivate=" + isPrivate + ", author=" + author + 
-                ", topics=" + topics + '}';
+        return "Article{" + "id=" + id + ", title=" + title + ", date=" +
+                date + ", views=" + views + ", summary=" + summary + 
+                ", text=" + text + ", isPrivate=" + isPrivate + ", author2=" + 
+                author + ", topics=" + topics + '}';
     }
-        
+      
 }

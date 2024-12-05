@@ -1,16 +1,13 @@
 package model.entities;
 
-import authn.Secured;
+import authn.Credentials;
 import com.google.gson.annotations.Expose;
 import jakarta.json.bind.annotation.JsonbTransient;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.xml.bind.annotation.XmlRootElement;
@@ -34,31 +31,24 @@ public class Customer implements Serializable {
     private Long id;
     @Expose
     private String username;
-    private String password;
+    
+    @OneToMany(mappedBy="author")
+    List<Article> articles;
 
-    @ManyToMany//(fetch = FetchType.LAZY)
-    @JoinTable(
-        name = "customer_article", 
-        joinColumns = @JoinColumn(name = "customer_id"), 
-        inverseJoinColumns = @JoinColumn(name = "favarticles_id")
-    )
-    @Expose
-    private List<Article> favArticles;
-
-    @OneToOne//(fetch = FetchType.LAZY, optional = true) 
+    @OneToOne
     @JsonbTransient // Ignorar para evitar bucles en JSON-B
-    private Author author;
+    private Credentials credential;
     
     // Campo para almacenar los links relacionados (HATEOAS)
     @Expose
     private Map<String, String> links = new HashMap<>();
 
-    public Author getAuthor() {
-        return author;
+    public Credentials getCredentials() {
+        return credential;
     }
 
-    public void setAuthor(Author author) {
-        this.author = author;
+    public void setCredentials(Credentials credential) {
+        this.credential = credential;
     }
 
     public static long getSerialVersionUID() {
@@ -81,22 +71,12 @@ public class Customer implements Serializable {
         this.username = username;
     }
 
-    @Secured
-    public String getPassword() {
-        return password;
-    }
-
-    @Secured
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
     public List<Article> getArticles() {
-        return favArticles;
+        return articles;
     }
 
-    public void setArticles(List<Article> favArticles) {
-        this.favArticles = favArticles;
+    public void setArticles(List<Article> articles) {
+        this.articles = articles;
     }
 
     public Map<String, String> getLinks() {
@@ -109,6 +89,6 @@ public class Customer implements Serializable {
 
     @Override
     public String toString() {
-        return "Customer{" + "id=" + id + ", username=" + username + ", favArticles=" + favArticles + "}";
+        return "Customer{" + "id=" + id + ", username=" + username + ", articles=" + articles + "}";
     }
 }
