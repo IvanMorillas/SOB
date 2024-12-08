@@ -58,7 +58,7 @@ public class Article implements Serializable {
     private String title;
     @Expose
     private Date date;
-    //@Expose
+
     private float Numviews;
     @Expose
     private String views;
@@ -121,7 +121,6 @@ public class Article implements Serializable {
     }
 
     public void setViews(float Numviews) {
-        //this.Numviews = Numviews;
         this.views = formatViews(Numviews);
     }
 
@@ -191,5 +190,4 @@ public class Article implements Serializable {
                 ", text=" + text + ", isPrivate=" + isPrivate + ", author2=" + 
                 author + ", topics=" + topics + '}';
     }
-      
 }

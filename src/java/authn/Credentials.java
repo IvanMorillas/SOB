@@ -1,4 +1,5 @@
 package authn;
+import jakarta.json.bind.annotation.JsonbTransient;
 import java.io.Serializable;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -21,6 +22,7 @@ public class Credentials implements Serializable {
     private String password;
     
     @OneToOne(mappedBy="credential")
+    @JsonbTransient
     private Customer customer;
     
     public Credentials(){
